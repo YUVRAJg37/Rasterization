@@ -1,5 +1,7 @@
 #include "Grid.h"
 
+#include <iostream>
+
 Grid::Grid() :
 m_ViewportHeight(600),
 m_ViewportWidth(600),
@@ -18,6 +20,24 @@ Grid::Grid(const int viewportHeight, const int viewportWidth, int gridColumns, i
 	m_Window = window;
 
 	init();
+}
+
+Grid::~Grid()
+{
+	delete[] m_GridCells;
+	delete[] m_GridLines;
+}
+
+void Grid::ResetGrid()
+{
+	for (int i = 0; i < m_GridRows; i++)
+	{
+		for (int j = 0; j < m_GridColumns; j++)
+		{
+			int it = i * m_GridColumns + j;
+			m_GridCells[it].setFillColor(m_GridCellsColor);
+		}
+	}
 }
 
 void Grid::init()
@@ -45,21 +65,25 @@ void Grid::init()
 		}
 	}
 
-	for(int i=1; i<m_GridRows; i++)
+	if (m_DrawGridLines)
 	{
-		int pos = i * cellWidth;
-		m_GridLines[i - 1].setSize({ 1.0f, (float)m_ViewportHeight });
-		m_GridLines[i - 1].setPosition(pos, 0);
-		m_GridLines[i - 1].setFillColor(m_GridLineColor);
-	}
 
-	for (int i = 1; i < m_GridColumns; i++)
-	{
-		int it = m_GridRows + i - 2;
-		int pos = i * cellHeight;
-		m_GridLines[it].setSize({(float)m_ViewportWidth, 1.0f });
-		m_GridLines[it].setPosition(0, pos);
-		m_GridLines[it].setFillColor(m_GridLineColor);
+		for (int i = 1; i < m_GridRows; i++)
+		{
+			int pos = i * cellWidth;
+			m_GridLines[i - 1].setSize({ 1.0f, (float)m_ViewportHeight });
+			m_GridLines[i - 1].setPosition(pos, 0);
+			m_GridLines[i - 1].setFillColor(m_GridLinesColor);
+		}
+
+		for (int i = 1; i < m_GridColumns; i++)
+		{
+			int it = m_GridRows + i - 2;
+			int pos = i * cellHeight;
+			m_GridLines[it].setSize({ (float)m_ViewportWidth, 1.0f });
+			m_GridLines[it].setPosition(0, pos);
+			m_GridLines[it].setFillColor(m_GridLinesColor);
+		}
 	}
 }
 
@@ -70,9 +94,12 @@ void Grid::DrawGrid()
 		m_Window->draw(m_GridCells[i]);
 	}
 
-	for(int i=0; i< m_GridColumns + m_GridRows - 2; i++)
+	if (m_DrawGridLines)
 	{
-		m_Window->draw(m_GridLines[i]);
+		for (int i = 0; i < m_GridColumns + m_GridRows - 2; i++)
+		{
+			m_Window->draw(m_GridLines[i]);
+		}
 	}
 }
 
@@ -83,19 +110,19 @@ void Grid::SetGridCellsColor(sf::Color color)
 
 void Grid::SetGridCellColor(int cell, sf::Color color)
 {
-	if(cell < m_TotalCells)
+	if(cell < 0 || cell >= m_TotalCells)
 		return;
 	m_GridCells[cell].setFillColor(color);
 }
 
 void Grid::SetGridLinesColor(sf::Color color)
 {
-	m_GridLineColor = color;
+	m_GridLinesColor = color;
 }
 
 void Grid::SetGridLineColor(int line, sf::Color color)
 {
-	if (line < m_TotalLines)
+	if (line < 0 ||  line >= m_TotalLines)
 		return;
 	m_GridLines[line].setFillColor(color);
 }
